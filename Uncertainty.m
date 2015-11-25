@@ -57,12 +57,15 @@ Unprotect[Confidence,SetConfidence,UValue,U,V,TFactor,UValueA,UValueB];
 Begin["`Private`"];
 
 Confidence::illegal="The argument `1` should be between 0 and 1. ";
+UValue::nonnegative="The argument `1` should be a non-negative number. "
 $confidence=0.95;
 Confidence:=$confidence;
 SetConfidence[]:=($confidence=0.95);
 SetConfidence[x_]/;If[x<1&&x>0,True,
     Message[Confidence::illegal,x],False]:=($confidence=x);
 UValue[v_]:=UValue[v,0];
+UValue[v_,u_?(Composition[Not,NonNegative])]:=(
+    Message[UValue::nonnegative,u];UValue[v,Norm[u]]);
 UValue[v_,{e_,d___}]:=UValue[v,UValueB[e,d]];
 UValue[v_,u_,error__]:=UValue[v,
     Norm[Replace[{u,error},{e_,d___}->UValueB[e,d],{1}]]];
@@ -77,7 +80,7 @@ UValueA[varlist_List/;Length[varlist]>1]:=Module[
 UValueB[error_,"Normal"]:=Module[{},
     error(-Sqrt[2]InverseErfc[1.+$confidence]/3)];
 UValueB[error_,"Uniform"]:=Module[{},
-    error(1.+$confidence)/2];
+    error (1.+$confidence)/2];
 UValueB[error_,"Triangular"]:=Module[{},
     error(1-Sqrt[1.-$confidence])];
 UValueB[error_:0]:=UValueB[error,"Normal"];
